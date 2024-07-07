@@ -14,7 +14,7 @@ jobs:
       petstore:
         image: swaggerapi/petstore3:unstable
         ports:
-          - 8080:80
+          - 80:8080
 
     strategy:
       matrix:
