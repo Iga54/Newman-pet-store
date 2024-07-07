@@ -2,14 +2,19 @@ name: Run tests with Newman and Node.js
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    services:
+      petstore:
+        image: swaggerapi/petstore3:unstable
+        ports:
+          - 8080:80
 
     strategy:
       matrix:
@@ -17,17 +22,23 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm i
-    - run: npm run report
-    - name: Archive test results
-      if: success() || failure()
-      uses: actions/upload-artifact@v3
-      with:
-       name: test-report
-       path: newman
-  
+      - uses: actions/checkout@v3
+      - name: Wait for Petstore to be ready
+        run: |
+          echo "Checking if Petstore is ready..."
+          while ! curl -sSf http://localhost/api/v3/pet/findByStatus?status=available > /dev/null; do
+            echo "Waiting for Petstore to be ready..."
+            sleep 5
+          done
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm i
+      - run: npm run report
+      - name: Archive test results
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: newman
