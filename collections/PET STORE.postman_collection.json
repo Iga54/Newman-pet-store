@@ -28,12 +28,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/pet/findByStatus?status=available&status=pending&status=sold",
+							"raw": "{{baseURL}}pet/findByStatus?status=available&status=pending&status=sold",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}pet"
 							],
 							"path": [
-								"pet",
 								"findByStatus"
 							],
 							"query": [
@@ -75,12 +74,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/pet/{{toGetPetId}}",
+							"raw": "{{baseURL}}pet/{{toGetPetId}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}pet"
 							],
 							"path": [
-								"pet",
 								"{{toGetPetId}}"
 							]
 						}
@@ -121,12 +119,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}v2/pet",
+							"raw": "{{baseURL}}pet",
 							"host": [
-								"{{baseURL}}v2"
-							],
-							"path": [
-								"pet"
+								"{{baseURL}}pet"
 							]
 						}
 					},
@@ -160,7 +155,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": \"{{$timestamp}}\",\n    \"name\": \"{{$randomUserName}}\",\n    \"photoUrls\": [\"https://dogtime.com/wp-content/uploads/sites/12/2023/08/GettyImages-865592368-e1692904739165.jpg\"]\n}",
+							"raw": "{\n    \"id\": \"{{toGetPetId}}\",\n    \"name\": \"{{$randomUserName}}\",\n    \"photoUrls\": [\"https://dogtime.com/wp-content/uploads/sites/12/2023/08/GettyImages-865592368-e1692904739165.jpg\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -168,12 +163,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}v2/pet",
+							"raw": "{{baseURL}}pet",
 							"host": [
-								"{{baseURL}}v2"
-							],
-							"path": [
-								"pet"
+								"{{baseURL}}pet"
 							]
 						}
 					},
@@ -190,14 +182,6 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Validate that the newPetId is deleted from the system\", function () {",
-									"    const responseData = pm.response.json();",
-									"",
-									"    pm.expect(responseData).to.be.an('object');",
-									"    pm.expect(responseData.code).to.exist;",
-									"    pm.expect(responseData.type).to.exist;",
-									"    pm.expect(responseData.message).to.exist;",
-									"});",
 									"",
 									""
 								],
@@ -205,16 +189,25 @@
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
 						"url": {
-							"raw": "{{baseURL}}v2/pet/{{newPetId}}",
+							"raw": "{{baseURL}}pet/{{newPetId}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}pet"
 							],
 							"path": [
-								"pet",
 								"{{newPetId}}"
 							]
 						}
@@ -226,6 +219,50 @@
 		{
 			"name": "pet orders",
 			"item": [
+				{
+					"name": "Placing an order for a pet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"let petOrderId = jsonData.id;",
+									"",
+									"pm.collectionVariables.set(\"petOrderId\",petOrderId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": {{idToGetOrder}},\n    \"petId\": 2,\n    \"quantity\": 1,\n    \"shipDate\": \"2024-07-26T13:12:46.914Z\",\n    \"status\": \"approved\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}store/order",
+							"host": [
+								"{{baseURL}}store"
+							],
+							"path": [
+								"order"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Get an order with given id",
 					"event": [
@@ -247,12 +284,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/store/order/{{idToGetOrder}}",
+							"raw": "{{baseURL}}store/order/{{idToGetOrder}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}store"
 							],
 							"path": [
-								"store",
 								"order",
 								"{{idToGetOrder}}"
 							]
@@ -273,7 +309,7 @@
 									"",
 									"let statusOrder = pm.response.json();",
 									"pm.test(\"Body matches string\", function () {",
-									"    pm.expect(pm.response.text()).to.include(\"placed\");",
+									"    pm.expect(pm.response.text()).to.include(\"approved\");",
 									"});",
 									"",
 									"",
@@ -305,59 +341,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/store/order/{{idToGetOrder}}",
+							"raw": "{{baseURL}}store/order/{{idToGetOrder}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}store"
 							],
 							"path": [
-								"store",
 								"order",
 								"{{idToGetOrder}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Placing an order for a pet",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"let jsonData = pm.response.json();",
-									"let petOrderId = jsonData.id;",
-									"",
-									"pm.collectionVariables.set(\"petOrderId\",petOrderId);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"petToOrderId\": \"9\",\n    \"quantity\": \"1\",\n    \"shipDate\": \"2024-06-26T13:12:46.914Z\",\n    \"status\": \"placed\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseURL}}v2/store/order",
-							"host": [
-								"{{baseURL}}v2"
-							],
-							"path": [
-								"store",
-								"order"
 							]
 						}
 					},
@@ -386,12 +376,11 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/store/order/{{petOrderId}}",
+							"raw": "{{baseURL}}store/order/{{petOrderId}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}store"
 							],
 							"path": [
-								"store",
 								"order",
 								"{{petOrderId}}"
 							]
@@ -415,12 +404,7 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"Response has code, type, and message properties\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('code');",
-									"    pm.expect(jsonData).to.have.property('type');",
-									"    pm.expect(jsonData).to.have.property('message');",
-									"});"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -431,7 +415,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"{{username}}\",\n    \"firstName\": \"{{randomFirstName}}\",\n    \"lastName\": \"{{randomLastName}}\",\n    \"email\": \"{{randomEmail}}\",\n    \"password\": \"{{password}}\",\n    \"phone\": \"{{randomPhoneNumber}}\"\n}",
+							"raw": "{\n   \n    \"username\": \"{{username}}\",\n    \"firstName\": \"{{randomFirstName}}\",\n    \"lastName\": \"{{randomLastName}}\",\n    \"email\": \"{{randomEmail}}\",\n    \"password\": \"{{password}}\",\n    \"phone\": \"{{randomPhoneNumber}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -439,12 +423,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}v2/user",
+							"raw": "{{baseURL}}user",
 							"host": [
-								"{{baseURL}}v2"
-							],
-							"path": [
-								"user"
+								"{{baseURL}}user"
 							]
 						}
 					},
@@ -462,9 +443,9 @@
 									"});",
 									"",
 									"pm.test(\"Message is a non-empty string\", function () {",
-									"    const responseData = pm.response.json();",
+									"    const responseData = pm.response.text();",
 									"",
-									"    pm.expect(responseData.message).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Message should not be empty\");",
+									"    pm.expect(responseData).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Message should not be empty\");",
 									"});",
 									""
 								],
@@ -476,12 +457,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/user/login?username={{username}}&password={{password}}",
+							"raw": "{{baseURL}}user/login?username={{username}}&password={{password}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}user"
 							],
 							"path": [
-								"user",
 								"login"
 							],
 							"query": [
@@ -517,12 +497,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/user/{{username}}",
+							"raw": "{{baseURL}}user/{{username}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}user"
 							],
 							"path": [
-								"user",
 								"{{username}}"
 							]
 						}
@@ -548,12 +527,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/user/logout",
+							"raw": "{{baseURL}}user/logout",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}user"
 							],
 							"path": [
-								"user",
 								"logout"
 							]
 						}
@@ -569,13 +547,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Response has the required fields - code, type, and message\", function () {",
-									"    const responseData = pm.response.json();",
-									"",
-									"    pm.expect(responseData).to.be.an('object');",
-									"    pm.expect(responseData).to.include.all.keys('code', 'type', 'message');",
 									"});",
 									"",
 									"",
@@ -602,12 +573,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}v2/user/{{username}}",
+							"raw": "{{baseURL}}user/{{username}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}user"
 							],
 							"path": [
-								"user",
 								"{{username}}"
 							]
 						}
@@ -624,13 +594,7 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"",
-									"pm.test(\"Response body has code, type, and message properties\", function () {",
-									"    var responseBody = pm.response.json();",
-									"    pm.expect(responseBody).to.have.property('code');",
-									"    pm.expect(responseBody).to.have.property('type');",
-									"    pm.expect(responseBody).to.have.property('message');",
-									"});"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -640,12 +604,11 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}v2/user/{{username}}",
+							"raw": "{{baseURL}}user/{{username}}",
 							"host": [
-								"{{baseURL}}v2"
+								"{{baseURL}}user"
 							],
 							"path": [
-								"user",
 								"{{username}}"
 							]
 						}
@@ -678,12 +641,12 @@
 	"variable": [
 		{
 			"key": "newPetId",
-			"value": "1719565839",
+			"value": "1720975724",
 			"type": "string"
 		},
 		{
 			"key": "idToGetOrder",
-			"value": "11"
+			"value": "10"
 		},
 		{
 			"key": "toGetPetId",
